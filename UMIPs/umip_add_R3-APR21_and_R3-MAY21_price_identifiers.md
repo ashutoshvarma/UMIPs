@@ -66,7 +66,7 @@ The DVM currently does not support reporting 30 day medianised RAI redemption ra
   - **TODO**
 
 3. Consider adding market data  (e.g., if we add a “Dai alternative,” the author could show the market size of Dai)
-**TODO**
+  - **TODO**
 
 <br> 
 
@@ -267,7 +267,7 @@ as opposed to multiple data sources being the truth (as is the case with looking
 We mitigate the effects of numerical instability by rounding to the nearest two decimal places.
 Different algorithms for calculating the geometric mean result in tiny differences in the result.
 Rounding to 2 decimal places hides small differences in geometric mean calculations. For example,
-if person A calculates the price request result as 1.53453 $RAI and person B calculates the price request result as $1.53489 RAI, both will agree on 1.53 $RAI.
+if person A calculates the price request result as 1.53453 $RAI and person B calculates the price request result as 1.53489 $RAI, both will agree on 1.53 $RAI.
 
 
 <br>
