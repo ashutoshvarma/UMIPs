@@ -15,14 +15,14 @@ This token will be referred to as 'R3' (Rai Redemption Rate) and will represent 
 
 The DVM should support price requests for the R3-APR21/RAI and R3-MAY21/RAI price indices.
 
-The DVM should support requests for a price that resolves to either the median monthly RAI annualised redemptionRate
+The DVM should support requests for a price that resolves to either the median monthly RAI annualized redemptionRate
 coefficient or a 2-hour Time-Weighted Average Price (TWAP) on the highest volume Uniswap RAI/R3 pool.
-The price resolution method to use will depend on the the timestamp the price request was made at.
+The price resolution method to use will depend on the timestamp the price request was made at.
 
 For a price request made at or after the expiry timestamp, the price will be resolved with the RAI annualized redemption rate
 coefficient calculation defined as per R3 token Technical Specification.
 
-For a price request made before expiry timestamp, the price will be resolved to a 2-hour TWAP for the Uniswap price of the
+For a price request made before the expiry timestamp, the price will be resolved to a 2-hour TWAP for the Uniswap price of the
 listed synthetic token in RAI.
 
 ## R3-APR21/RAI
@@ -30,9 +30,9 @@ The R3 token tied to this price identifier will expire on the cutoff timestamp `
 ```
 CUTOFF = 1619568000         # 28 April 2021 12:00:00 AM
 if dvm_timestamp >= CUTOFF:
-  Resolve price to the 30 day total RAI annualized redemptionRate coefficient. (See implementation)
+  Resolve price to the 30-day total RAI annualized redemptionRate coefficient. (See implementation)
 else:
-  Resolve price to the 2-hour Time-Weighted Average Price for the Uniswap price of the R3 token quoted in RAI. R3 token address in technical specification.
+  Resolve price to the 2-hour Time-Weighted Average Price for the Uniswap price of the R3 token quoted in RAI. R3 token address in the technical specification.
 ```
 
 ## R3-MAY21/RAI
@@ -40,21 +40,21 @@ The R3 token tied to this price identifier will expire on the cutoff timestamp `
 ```
 CUTOFF = 1622160000         # 28 May 2021 12:00:00 AM
 if dvm_timestamp >= CUTOFF:
-  Resolve price to the 30 day total RAI annualized redemptionRate coefficient. (See implementation)
+  Resolve price to the 30-day total RAI annualized redemptionRate coefficient. (See implementation)
 else:
-  Resolve price to the 2-hour Time-Weighted Average Price for the Uniswap price of the R3 token quoted in RAI. R3 token address in technical specification.
+  Resolve price to the 2-hour Time-Weighted Average Price for the Uniswap price of the R3 token quoted in RAI. R3 token address in the technical specification.
 ```
 
 
 # MOTIVATION
 
-The DVM currently does not support reporting 30 day medianised RAI redemption rate coefficent or a two-hour TWAP of the R3 token.
+The DVM currently does not support reporting 30 days medianised RAI redemption rate coefficient or a two-hour TWAP of the R3 token.
 
-1. What are the financial positions enabled by creating this synthetic that do not already exist?
+1. What are the financial positions enabled by creating this synthetic that does not already exist?
 
     - The usage of a two-hour TWAP for liquidations, then an aggregated price at expiration is similar to UMIP-22.
       This setup allows us to create synthetic futures. This will enable RAI holders (those who hold, speculate on or use RAI in other protocols and apps)
-      to hedge against redemption rate volatility which allows them to "lock-in" future returns from redeeming or selling RAI.
+      to hedge against redemption rate volatility which allows them to "lock in" future returns from redeeming or selling RAI.
       Other users may wish to speculate on the redemption rate for a specific month in the future.
       Providing a price feed for the settlement of a financial contract is a prerequisite
       
@@ -63,7 +63,11 @@ The DVM currently does not support reporting 30 day medianised RAI redemption ra
     
 
 2. Please provide an example of a person interacting with a contract that uses this price identifier. 
-  - **TODO**
+  - People that hold RAI are directly affected by the redemption rate.
+    R3 would allow them to hedge their positions by taking a bet on future redemption rate changes.
+  - A RAI holder wants to mitigate the risk due to the volatility of the redemption rate, so he mints the synth and sells it in the market.
+    Now at the end of the month if average redemption increases then synth will settle for a higher price and he/she will lose some
+    collateral but the increase in RAI market price (due to redemption rate) will cover the cost of lost collateral.
 
 3. Consider adding market data  (e.g., if we add a “Dai alternative,” the author could show the market size of Dai)
   - **TODO**
@@ -105,41 +109,37 @@ All the data can be queried from the Uniswap V2 subgraph: https://thegraph.com/e
 
     - Yes
 
-7.  How often is the provided price updated?
-
-    - 
-
-8. Is an API key required to query these sources? 
+7. Is an API key required to query these sources? 
 
     - No
 
-9. Is there a cost associated with usage? 
+8. Is there a cost associated with usage? 
 
     - No
 
-10. If there is a free tier available, how many queries does it allow for?
+9. If there is a free tier available, how many queries does it allow for?
 
     - No limits at the moment.
 
-11.  What would be the cost of sending 15,000 queries?
+10.  What would be the cost of sending 15,000 queries?
 
      - $0
 
 
 ### Post Cutoff
 
-The source of truth for this data is the annualised value of RAI OracleRelayer contact's `redemptionRate()` method.
+The source of truth for this data is the annualized value of RAI OracleRelayer contact's `redemptionRate()` method.
 As of the writing of this UMIP, the agreed-upon RAI OracleRelayer smart contract address is 0x4ed9C0dCa0479bC64d8f4EB3007126D5791f7851.
 
 This price identifier aggregates the value returned by `redemptionRate()` over every block from the 30 days ending at the cutoff/expiration
 timestamp (1619568000 for R3-APR21/RAI and 1622160000 for R3-MAY21/RAI).
 
-It is recommended to gather the raw data from an Ethereum archive node. Alternatively, this annualised value is indexed in the
+It is recommended to gather the raw data from an Ethereum archive node. Alternatively, this annualized value is indexed in the
 [RAI Subgraph]( https://subgraph.reflexer.finance/subgraphs/name/reflexer-labs/rai).
-As of writing this UMIP, RAI Subgraph is free and will remain so.
+As of writing this UMIP, the RAI Subgraph is free and will remain so.
 
-All of these endpoints give the redemption rate per block for historical blocks, however converting the data from RAI OracleRelayer
-to APR (subgraph already has annualised rate) is required and 30 day median aggregation is still required for both sources. (Read the implementation section)
+All of these endpoints give the redemption rate coefficient per block for historical blocks, however, converting the data from RAI OracleRelayer
+to APR (subgraph already has annualized rate) is required, and 30-day median aggregation is still required for both sources. (Read the implementation section)
 
 
 1. What sources should the price be queried from? It is recommended to have at least 3 sources.
@@ -179,10 +179,10 @@ to APR (subgraph already has annualised rate) is required and 30 day median aggr
 
 # PRICE FEED IMPLEMENTATION
 
-For the creation of the R3 token, it is desired that the DVM return either the 30 day median annualised rate, or a 2-hour TWAP on the market price of R3.
+For the creation of the R3 token, it is desired that the DVM return either the 30-day median annualized rate, or a 2-hour TWAP on the market price of R3.
 The type of price that the DVM will return is dependent on the timestamp the price request is made at.
 This timestamp is the expiry timestamp of the contract that is intended to use this price identifier,
-so the TWAP calculation is used pre-expiry and the closing index value of R3 calculation is used at expiry.
+so the TWAP calculation is used pre-expiry and the closing index value of the R3 calculation is used at expiry.
 
 This is very similar to the uGAS token and this design is outlined in [UMIP 22](https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-22.md).
 
@@ -190,7 +190,7 @@ Because the redemptionRate is only used at expiry, it will not be possible for a
 This means that only the Uniswap TWAP will need to be queried in real-time with a price feed.
 
 [Here](https://github.com/UMAprotocol/protocol/blob/master/packages/financial-templates-lib/src/price-feed/UniswapPriceFeed.js)
-is a reference implementation for an off-chain price feed that calculates the TWAP of a token based on Uniswap price data. 
+is a reference implementation for an off-chain price feed that calculates the TWAP of a token-based on Uniswap price data. 
 
 <br>
 
@@ -210,7 +210,7 @@ is a reference implementation for an off-chain price feed that calculates the TW
     - YES
 
 - Is your collateral currency already approved to be used by UMA financial contracts? If no, submit a UMIP to have the desired collateral currency approved for use. 
-    - NO, but there is a separate pending UMIP for approving RAI as collatarel currency
+    - NO, but there is a separate pending UMIP for approving RAI as collateral currency
 
 **5. Collateral Decimals** - 18
 
@@ -230,7 +230,7 @@ is a reference implementation for an off-chain price feed that calculates the TW
     - YES
 
 - Is your collateral currency already approved to be used by UMA financial contracts? If no, submit a UMIP to have the desired collateral currency approved for use. 
-    - NO, but there is a separate pending UMIP for approving RAI as collatoral currency
+    - NO, but there is a separate pending UMIP for approving RAI as collateral currency
 
 **5. Collateral Decimals** - 18
 
@@ -281,22 +281,29 @@ use the same two-hour TWAP calculation implementation from UMIP-22.
 
 1. The end TWAP timestamp equals the price request timestamp.
 2. The start TWAP timestamp is defined by the end TWAP timestamp minus the TWAP period (2 hours in this case).
-3. A single Uniswap price is defined for each timestamp as the price that the RAI/R3 pool returns at the end of the latest block
-   whose timestamp is <= the timestamp that is queried for.
-4. The TWAP is an average of the prices for each timestamp between the start and end timestamps. Each price in this average will get an equal weight.
+3. A single Uniswap price is defined for each timestamp as the price that the RAI/R3 pool returns at the end of the latest block whose timestamp is <= the timestamp that is queried for.
+4. The TWAP is an average of the prices for each timestamp between the start and end timestamps. Each price in this average will get equal weight.
 5. As the token price will already implicitly be tracking the R3-MAY21/RAI/RAI or R3-APR21/RAI/RAI price, it should be left as returned without any scaling transformation.
 6. The final price should be returned with the synthetic token as the denominator of the price pair and should be submitted with 18 decimals.
-   But rounded to 2 decimal places. For example, if the APR is 1.38482747, then we round to 2 decimal places and convert 1-to-1 to RAI for 1.38 RAI.
+   But rounded to 2 decimal places. For example, if the value is 1.38482747, then we round to 2 decimal places and convert 1-to-1 to RAI for 1.38 RAI.
    However, RAI on Ethereum uses 18 decimal places so voters must submit 1.380000000000000000 RAI.
 
 
 ### Post-cutoff
+Since redemption rate can be negative also and EMPs don't support negative indexes as of now. We will use the Redemption Rate Coefficient for the settlement of synths.
+```
+Redemption Rate Coefficient = Redemption Rate + 1
+```
+
+RAI OracleRelayer contact's `redemptionRate()` and subgraphs both returns Redemption Rate Coefficient
+
+
 For price requests made after or on the cutoff, (`1619568000` for `R3-APR21/RAI` and `1622160000` for `R3-MAY21/RAI`), use the below geometric mean calculation.
 
 This implementation works with [RAI subgraph](https://subgraph.reflexer.finance/subgraphs/name/reflexer-labs/rai).
 To use it with other data sources, modify the `get_rates()` function.
 
-The script below takes `end_timestamp` and calculate the 30 day geometric mean of redemption rate APR. UMA token holders should define these as follows.
+The script below takes `end_timestamp` and calculates the 30 days geometric mean of redemption rate coefficient  APR. UMA token holders should define these as follows.
 ```
 end_timestamp = DVM timestamp
 ```
@@ -352,7 +359,7 @@ def get_rates(end_timestamp: int, total_days: int = 30) -> List[float]:
         SUBGRAPH_URL, json=gen_query(start_timestamp, end_timestamp)
     ).json()["data"]["redemptionRates"]
 
-    # snaity check to make sure all rates are consecutive and none is missinng
+    # snaity check to make sure all rates are consecutive and none is missing
     for i in range(1, len(all_rates)):
         # list is in desc order
         prev = all_rates[i]
@@ -409,9 +416,7 @@ if __name__ == "__main__":
 Security considerations are similar to UMIP-22.
 
 Security considerations are focused on the use of the token price for monitoring collateral ratios.
-- Token price manipulation - Under illiquid market conditions, an attacker could attempt to drive prices down to withdraw more collateral
-  than normally allowed or drive prices up to trigger liquidations. However, it is important to note that almost all attacks that have been
-  performed on DeFi projects are executed with flash loans, which allows the attacker to obtain leverage and instantaneously manipulate a price
+- Token price manipulation - Under illiquid market conditions, an attacker could attempt to drive prices down to withdraw more collateral than normally allowed or drive prices up to trigger liquidations. However, it is important to note that almost all attacks that have been performed on DeFi projects are executed with flash loans, which allows the attacker to obtain leverage and instantaneously manipulate a price
   and extract collateral. Additionally, flash loans will have no effect on a tradable token price because the TWAP calculation is measured based
   on the price at the end of each block. Collateralization based off of a TWAP should make these attacks ineffective and would require attackers
   to use significantly more capital and take more risk to exploit any vulnerabilities.
@@ -420,16 +425,16 @@ Security considerations are focused on the use of the token price for monitoring
   through rally could create a concern. In this scenario we could see the TWAP of the token significantly lag the actual market price and create an
   opportunity for sponsors to mint tokens with less collateral than what they can sell them from in the market. It is important to note that this is
   an edge case scenario either driven by an irrational change in market expectations or it can be driven by a “fat finger” mistake which is a vulnerability
-  to any market. Even in this edge case we believe the design of the token and the parameters chosen should mitigate risks. The current Expiring Multi Party
-  (EMP) contract requires sponsors to mint tokens with enough collateral to meet the Global Collateral Ratio (GCR) which has stood well above 200% for other
+  to any market. Even in this edge case, we believe the design of the token and the parameters chosen should mitigate risks. The current Expiring Multi Party
+  (EMP) the contract requires sponsors to mint tokens with enough collateral to meet the Global Collateral Ratio (GCR) which has stood well above 200% for other
   contracts. Therefore, assuming the GCR is similar for R3, the market would need to first rally at least 100% before potentially being exposed.
   If the sponsor wishes to withdraw collateral below the GCR they would request a “slow withdrawal” which would subject him to a 2 hour “liveness period”
-  where anybody can liquidate the position if it fell below the required collateral ratio. The combination of the GCR and 2 hour “liveness period” allows
-  the 2 hour TWAP to “catch up” to the market price and would protect from this scenario and deter sponsors from attempting to exploit it.
+  where anybody can liquidate the position if it fell below the required collateral ratio. The combination of the GCR and 2 hours “liveness period” allows
+  the 2 hours TWAP to “catch up” to the market price and would protect from this scenario and deter sponsors from attempting to exploit it.
 
 
 Also, The trading price of R3 is the expected aggregate RAI redemption rate at the end of April and May.
-This is slow moving by default, so price manipulation for the two-hour TWAP should be challenging.
+This is slow-moving by default, so price manipulation for the two-hour TWAP should be challenging.
 However, the price may be volatile during earlier periods of the month.
 This is due to the lack of information about the future.
 It is expected these prices become less volatile as the cutoff/expiration date nears.
