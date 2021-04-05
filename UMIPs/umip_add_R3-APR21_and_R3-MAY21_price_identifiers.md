@@ -69,9 +69,6 @@ The DVM currently does not support reporting 30 days medianised RAI redemption r
     Now at the end of the month if average redemption increases then synth will settle for a higher price and he/she will lose some
     collateral but the increase in RAI market price (due to redemption rate) will cover the cost of lost collateral.
 
-3. Consider adding market data  (e.g., if we add a “Dai alternative,” the author could show the market size of Dai)
-  - **TODO**
-
 <br> 
 
 # MARKETS & DATA SOURCES
